@@ -1,0 +1,8 @@
+/corpus/
+/index/
+/*.o
+/extract_text
+/tokenize
+/indexer
+/search
+/server
