@@ -68,7 +68,6 @@ Result search(string q) {
                 }
         }
     }
-    // 余弦部分：内积除以两个范数
     map<ull, double> ip;
     map<ull, ull> bodyline;
     for(auto kv : qv) {

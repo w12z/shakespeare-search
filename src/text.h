@@ -23,7 +23,6 @@ string stem(string w) {
     int k = porter_stem(buf.data(), 0, (int)w.size() - 1);
     return string(buf.data(), k + 1);
 }
-// 按分隔符切开，空的一段丢掉
 vector<string> split(string s, char sep) {
     vector<string> v;
     string t;
@@ -72,7 +71,6 @@ ull enc(string loc) {
     ull c = loc.find(':');
     return num(loc.substr(0, c)) * 1048576 + num(loc.substr(c + 1));
 }
-// 拼 JSON 用，转义引号和反斜杠
 string esc(string s) {
     string o;
     for(char c : s) {

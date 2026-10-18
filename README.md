@@ -82,8 +82,6 @@ porter_stem.h
 剩下的标签当成分隔符，最后解码 HTML 实体。`<br>` `<p>` `<tr>` 这类标签额外产生一个换行，
 好把台词和角色名分成不同的行 —— 后面摘要要按行取。
 
-导航栏不删的话，"Previous scene" "Next scene" "Shakespeare homepage" 这些会进词表。
-
 只跳过 `full.html`、`news.html`、`test.html`，其余 html 都收，包括各剧本的场次列表、
 `works.html` 和站点首页。
 
@@ -135,9 +133,6 @@ cos = (F(q), F(D)) / (‖F(q)‖ · ‖F(D)‖)
 
 ## 已知问题
 
-- **各剧本的场次列表收了两遍**。`hamlet/hamlet.html` 和 `hamlet/index.html` 是同一个列表，
-  内容只差一句亚马逊的买书广告（`You can buy the Arden text of this play from...`），
-  字节不同所以去重去不掉。37 个剧本都有这一对。
 - **相邻判断用的是词干**，所以 `lovely death` 会命中 `love death`（`lovely` 的词干是 `love`）。
   搜 `love death` 排第一的是 `Death, death; O amiable lovely death!`，原文里并没有这个词组。
   要修得把位置索引改成按原词存。

@@ -8,7 +8,6 @@ string readFile(string path) {
     cin.clear();
     return string(istreambuf_iterator<char>(cin), istreambuf_iterator<char>());
 }
-// 整个字符串写到文件里
 void writeFile(string path, string text) {
     if(!freopen(path.c_str(), "w", stdout)) return;
     cout.clear(), cout << text, cout.flush();
@@ -17,7 +16,6 @@ string lower(string s) {
     for(ull i = 0; i < s.size(); i++) s[i] = tolower((unsigned char)s[i]);
     return s;
 }
-// HTML 实体解码。常见的具名实体查表，&#39; 这种数字的用 strtol 解
 string decode(string s) {
     map<string, string> named;
     named["&amp;"] = "&", named["&lt;"] = "<", named["&gt;"] = ">";
@@ -54,7 +52,6 @@ ull countWords(string s) {
     return n;
 }
 struct Page { string text; ull words; };
-// 一页 HTML 转成正文
 Page parsePage(string html) {
     // 先正则删掉整块：注释、head/script/style、顶部那个 class="nav" 的导航表格
     html = regex_replace(html, regex("<!--[\\s\\S]*?-->"), " ");
@@ -76,7 +73,6 @@ Page parsePage(string html) {
         i = (e == string::npos) ? html.size() : e + 1;
     }
     t = decode(t);
-    // 把连续空白压成一个空格，连续换行压成一个换行
     string out;
     bool nl = false, sp = false;
     for(ull i = 0; i < t.size(); i++) {
@@ -108,7 +104,6 @@ void walk(string dir, string rel, vector<string>& out) {
         else out.push_back(r);
     }
 }
-// 逐级建目录
 void makeDirs(string path) {
     string cur;
     for(ull i = 0; i < path.size(); i++) {
@@ -130,7 +125,6 @@ int main() {
         if(mirror(a) != mirror(b)) return mirror(b);
         return a < b;
     });
-    // 全文页不要（和分场文件内容重复）。目录页留着——搜到目录页也是有用的
     set<string> skip = {"full.html", "news.html", "test.html"};
     set<ull> seen;
     for(ull i = 0; i < files.size(); i++) {

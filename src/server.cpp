@@ -2,7 +2,6 @@
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<unistd.h>
-// 一次查询的结果拼成 JSON
 string json(string q) {
     Result r = search(q);
     string out;
