@@ -6,7 +6,7 @@ vector<string> path, title;
 vector<double> sq;
 set<string> stop;
 unordered_map<string, vector<pair<ull, string>>> post;
-// 启动时读一次索引。post 存的是 词 -> [(文档, 位置串)]，sq 是每篇的 Σtf²（算余弦要用）
+// 启动时读一次索引。post 存的是 词 -> [(文档, 位置串)]，sq 是每篇的 tf² 累加
 void loadIndex() {
     stop = loadStop();
     for(string l : split(readFile("index/docs.tsv"), '\n')) {
@@ -24,7 +24,6 @@ void loadIndex() {
     }
 }
 // 一次查询。返回按分数排好的前 10 条，以及总命中数和相邻对总数。
-// score = 余弦 + 0.5 × near/pairs，后者是"查询里相邻的词在文档里也挨着"的比例
 Result search(string q) {
     Result res{};
     vector<string> raw = tokenize(q), all, seq;
@@ -38,7 +37,7 @@ Result search(string q) {
     for(string w : seq) qv[w]++;
     for(auto kv : qv) qn += (double)kv.second * kv.second;
     qn = sqrt(qn);
-    // 把查询词的位置集合展开，后面判断相邻要用
+    // 把查询词的位置集合展开
     map<string, map<ull, set<ull>>> pos;
     set<string> need(all.begin(), all.end());
     for(string t : need) {

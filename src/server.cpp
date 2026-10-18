@@ -9,7 +9,6 @@ string json(string q) {
         Row h = r.rows[i];
         char sc[32];
         snprintf(sc, sizeof(sc), "%.4f", h.score);
-        // corpus 里是 .txt，对应的原网页是 .html，拼个能点的链接
         string u = path[h.doc];
         u = u.substr(0, u.rfind('.')) + ".html";
         out += i ? "," : "";
@@ -36,7 +35,6 @@ string mime(string p) {
     return e == ".html" ? "text/html" : e == ".css" ? "text/css"
          : e == ".gif" ? "image/gif" : e == ".ico" ? "image/x-icon" : "text/plain";
 }
-// write 一次不一定写得完，循环写到没得写
 void sendAll(int fd, string s) {
     for(ull off = 0; off < s.size();) {
         ssize_t n = write(fd, s.data() + off, s.size() - off);
