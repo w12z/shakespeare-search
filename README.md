@@ -11,6 +11,8 @@
 
 停用词表直接下载的 snowballstem.org 的英文表。
 
+两者的 fetch 的脚本是 AI 写的。
+
 同时 HTML 摘除的正则也借助了 AI 写；server.cpp 这个网页交互前端也大量借助了 AI（不是很会 C++ 的 Web，而且这个交互前端其实可有可无）。
 
 ## 编译
