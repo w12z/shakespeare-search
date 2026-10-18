@@ -47,8 +47,6 @@ g++ -std=c++17 -O2 src/server.cpp porter_stem.o -o server
 
 `./search` 会把索引读进内存，然后一直等输入，这是一个控制台形式的前端。
 
-空行或者 Ctrl-D 退出。也可以直接管道喂给它：`printf 'love death\n' | ./search`。
-
 `./server` 启动时同样把索引读进内存，然后在搜索框中输入进行搜索，这是一个网页形式的前端。
 
 ## 目录
@@ -78,16 +76,14 @@ porter_stem.c      词干化，Martin Porter 的 ANSI C 实现
 porter_stem.h
 ```
 
-## 正文怎么抽出来的
+## 正文抽取
 
-一页 HTML 先删掉注释、`head`/`script`/`style`，再删掉顶上那个 `class="nav"` 的导航表格，
+一页 HTML 先删掉注释、`head`/`script`/`style`，再删掉顶上 `class="nav"` 的导航表格，
 剩下的标签当成分隔符，最后解码 HTML 实体。`<br>` `<p>` `<tr>` 这类标签额外产生一个换行，
-好把台词和角色名分成不同的行 —— 后面摘要要按行取。
+把台词和角色名分成不同的行。
 
-只跳过 `full.html`、`news.html`、`test.html`，其余 html 都收，包括各剧本的场次列表、
-`works.html` 和站点首页。
+跳过 `full.html`、`news.html`、`test.html`
 
-`Comedy/`、`History/`、`Tragedy/` 是同一批文件的镜像，按内容去重，保留顶层那份；
 有几个文件两个版本内容不同（比如 `lingers`/`fingers`），那属于不同版本，两个都留着。
 
 ## 分词规则

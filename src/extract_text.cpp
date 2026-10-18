@@ -118,24 +118,11 @@ int main() {
     walk(inDir, "", all);
     for(ull i = 0; i < all.size(); i++)
         if(all[i].substr(all[i].size() - 5) == ".html") files.push_back(all[i]);
-    auto mirror = [](const string& p) {
-        return p.find("Comedy/") == 0 || p.find("History/") == 0 || p.find("Tragedy/") == 0;
-    };
-    sort(files.begin(), files.end(), [&](string a, string b) {
-        if(mirror(a) != mirror(b)) return mirror(b);
-        return a < b;
-    });
     set<string> skip = {"full.html", "news.html", "test.html"};
-    set<ull> seen;
     for(ull i = 0; i < files.size(); i++) {
         string rel = files[i], name = rel.substr(rel.find_last_of('/') + 1);
         if(skip.count(lower(name))) continue;
-        // 内容相同的只留一份
-        string raw = readFile(inDir + "/" + rel);
-        ull h = hash<string>{}(raw);
-        if(seen.count(h)) continue;
-        seen.insert(h);
-        Page p = parsePage(raw);
+        Page p = parsePage(readFile(inDir + "/" + rel));
         if(p.words == 0) continue;
         string dst = outDir + "/" + rel;
         dst = dst.substr(0, dst.find_last_of('.')) + ".txt";
