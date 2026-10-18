@@ -82,9 +82,7 @@ porter_stem.h
 剩下的标签当成分隔符，最后解码 HTML 实体。`<br>` `<p>` `<tr>` 这类标签额外产生一个换行，
 把台词和角色名分成不同的行。
 
-跳过 `full.html`、`news.html`、`test.html`
-
-有几个文件两个版本内容不同（比如 `lingers`/`fingers`），那属于不同版本，两个都留着。
+只跳过 `full.html`、`news.html`、`test.html`，其余 html 都收，不按内容去重。
 
 ## 分词规则
 
