@@ -3,6 +3,7 @@
 #include"porter_stem.h"
 using namespace std;
 typedef unsigned long long ull;
+// 读整个文件。内部 freopen 到 stdin，读完 stdin 就停在这个文件上了
 string readFile(string path) {
     if(!freopen(path.c_str(), "r", stdin)) return "";
     cin.clear();
@@ -14,6 +15,7 @@ ull num(string s) {
 bool wordChar(char c) {
     return isalnum((unsigned char)c) != 0;
 }
+// 词干化。porter_stem 只认小写字母，传进来的必须已经转过小写
 string stem(string w) {
     if(w.empty()) return w;
     vector<char> buf(w.begin(), w.end());
@@ -21,6 +23,7 @@ string stem(string w) {
     int k = porter_stem(buf.data(), 0, (int)w.size() - 1);
     return string(buf.data(), k + 1);
 }
+// 按分隔符切开，空的一段丢掉
 vector<string> split(string s, char sep) {
     vector<string> v;
     string t;
@@ -31,6 +34,8 @@ vector<string> split(string s, char sep) {
     if(!t.empty()) v.push_back(t);
     return v;
 }
+// 分词：连续的字母数字算一个词，撇号只在两个字母中间才保留，统一转小写
+// 例：beauty's -> beauty's   'tis -> tis   to-night -> to, night
 vector<string> tokenize(string s) {
     vector<string> w;
     for(ull i = 0; i < s.size();) {
@@ -45,6 +50,7 @@ vector<string> tokenize(string s) {
     }
     return w;
 }
+// 读停用词表。| 开头的行是注释，词后面也可能跟着 | 写说明
 set<string> loadStop() {
     set<string> s;
     for(string line : split(readFile("resources/stopwords.txt"), '\n')) {
@@ -54,15 +60,19 @@ set<string> loadStop() {
     }
     return s;
 }
+// 位置串形如 "91:4,120:0"，逗号数加一就是 tf
 ull tfOf(string s) {
     ull n = 1;
     for(char c : s) if(c == ',') n++;
     return n;
 }
+// "行:列" 打包成 行*2^20+列。这样判断两个词挨着只要 x+1，取行号只要 x>>20，
+// 不用去解析字符串。（一行不可能有 2^20 个词，所以不会串行）
 ull enc(string loc) {
     ull c = loc.find(':');
     return num(loc.substr(0, c)) * 1048576 + num(loc.substr(c + 1));
 }
+// 拼 JSON 用，转义引号和反斜杠
 string esc(string s) {
     string o;
     for(char c : s) {
@@ -72,6 +82,8 @@ string esc(string s) {
     }
     return o;
 }
+// 取文件第 n 行（从 1 开始）。这里故意不用 readFile，那个会把 stdin 抢走，
+// 交互模式下读完摘要就再也读不到下一条查询了
 string lineAt(string path, ull n) {
     FILE* f = fopen(path.c_str(), "r");
     if(!f) return "";

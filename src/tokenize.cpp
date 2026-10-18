@@ -32,6 +32,8 @@ void walk(string dir, string rel, vector<string>& out) {
         else out.push_back(r);
     }
 }
+// 遍历 corpus/，把每篇切成词元，记下 (docId, 行号, 行内位置)
+// 输出 docs.tsv（编号 -> 路径和标题）和 tokens.tsv（一行一个词元）
 int main() {
     string inDir = "corpus", outDir = "index";
     vector<string> all, files;
@@ -48,7 +50,7 @@ int main() {
             string line;
             while(i < text.size() && text[i] != '\n') line += text[i++];
             i++, lineNo++;
-            if(lineNo == 1) title = line;
+            if(lineNo == 1) title = line;       // 每篇第一行是剧本标题
             if(line.empty()) continue;
             ull pos = 0, p = 0;
             while(p < line.size()) {
@@ -56,6 +58,7 @@ int main() {
                 string w;
                 while(p < line.size()) {
                     if(wordChar(line[p])) w += tolower((unsigned char)line[p]), p++;
+                    // 撇号只在两个字母中间才算词的一部分：beauty's 保留，'tis 丢掉撇号
                     else if(line[p] == '\'' && p + 1 < line.size() && wordChar(line[p + 1]) && wordChar(w.back()))
                         w += '\'', p++;
                     else break;

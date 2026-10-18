@@ -2,6 +2,7 @@
 #include<sys/socket.h>
 #include<netinet/in.h>
 #include<unistd.h>
+// 一次查询的结果拼成 JSON
 string json(string q) {
     Result r = search(q);
     string out;
@@ -9,6 +10,7 @@ string json(string q) {
         Row h = r.rows[i];
         char sc[32];
         snprintf(sc, sizeof(sc), "%.4f", h.score);
+        // corpus 里是 .txt，对应的原网页是 .html，拼个能点的链接
         string u = path[h.doc];
         u = u.substr(0, u.rfind('.')) + ".html";
         out += i ? "," : "";
@@ -35,6 +37,7 @@ string mime(string p) {
     return e == ".html" ? "text/html" : e == ".css" ? "text/css"
          : e == ".gif" ? "image/gif" : e == ".ico" ? "image/x-icon" : "text/plain";
 }
+// write 一次不一定写得完，循环写到没得写
 void sendAll(int fd, string s) {
     for(ull off = 0; off < s.size();) {
         ssize_t n = write(fd, s.data() + off, s.size() - off);
@@ -42,6 +45,10 @@ void sendAll(int fd, string s) {
         off += n;
     }
 }
+// 手写的 HTTP 服务，单线程一次处理一个连接。
+//   /            搜索页
+//   /api/search  查询，返回 JSON
+//   其他路径      当静态文件发给 web/ 下的同名文件（这样点结果能看原网页）
 int main() {
     loadIndex();
     printf("loaded %llu documents, %llu terms\n", (ull)path.size(), (ull)post.size());
@@ -56,6 +63,7 @@ int main() {
     while(1) {
         int c = accept(s, 0, 0);
         if(c < 0) continue;
+        // 请求头读到空行为止
         string req;
         char buf[8192];
         while(req.find("\r\n\r\n") == string::npos && req.size() < 65536) {
@@ -63,6 +71,7 @@ int main() {
             if(n <= 0) break;
             req.append(buf, n);
         }
+        // 第一行是 "GET /路径 HTTP/1.1"
         string t;
         ull p1 = req.find(' '), p2 = req.find(' ', p1 + 1);
         if(p1 != string::npos && p2 != string::npos) t = req.substr(p1 + 1, p2 - p1 - 1);
@@ -74,7 +83,7 @@ int main() {
         } else if(route == "/api/search") {
             string a = t.substr(qm == string::npos ? t.size() : qm + 1);
             body = json(a.rfind("q=", 0) == 0 ? urlDecode(a.substr(2)) : ""), ct = "application/json";
-        } else if(t.find("..") == string::npos) {
+        } else if(t.find("..") == string::npos) {      // 简单挡一下路径穿越
             body = readFile("web" + route), ct = mime(route);
         }
         if(body.empty()) body = "not found", ct = "text/plain";

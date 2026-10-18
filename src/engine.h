@@ -6,6 +6,7 @@ vector<string> path, title;
 vector<double> sq;
 set<string> stop;
 unordered_map<string, vector<pair<ull, string>>> post;
+// 启动时读一次索引。post 存的是 词 -> [(文档, 位置串)]，sq 是每篇的 Σtf²（算余弦要用）
 void loadIndex() {
     stop = loadStop();
     for(string l : split(readFile("index/docs.tsv"), '\n')) {
@@ -22,10 +23,13 @@ void loadIndex() {
         post[l.substr(0, t1)].push_back({doc, l.substr(t3 + 1)});
     }
 }
+// 一次查询。返回按分数排好的前 10 条，以及总命中数和相邻对总数。
+// score = 余弦 + 0.5 × near/pairs，后者是"查询里相邻的词在文档里也挨着"的比例
 Result search(string q) {
     Result res{};
     vector<string> raw = tokenize(q), all, seq;
     for(string w : raw) all.push_back(stem(w));
+    // 文档侧不去停用词（相邻判断要用），查询侧去掉；全被去掉就整个留下
     for(ull i = 0; i < raw.size(); i++) if(!stop.count(raw[i])) seq.push_back(all[i]);
     if(seq.empty()) seq = all;
     if(all.empty()) return res;
@@ -34,6 +38,7 @@ Result search(string q) {
     for(string w : seq) qv[w]++;
     for(auto kv : qv) qn += (double)kv.second * kv.second;
     qn = sqrt(qn);
+    // 把查询词的位置集合展开，后面判断相邻要用
     map<string, map<ull, set<ull>>> pos;
     set<string> need(all.begin(), all.end());
     for(string t : need) {
@@ -45,6 +50,7 @@ Result search(string q) {
             pos[t][p.first] = s;
         }
     }
+    // 相邻统计：查询里每一对相邻词，看文档里有没有 p 和 p+1 同时出现
     ull pairs = all.size() - 1;
     res.pairs = pairs;
     map<ull, ull> near;
@@ -62,6 +68,7 @@ Result search(string q) {
                 }
         }
     }
+    // 余弦部分：内积除以两个范数
     map<ull, double> ip;
     map<ull, ull> bodyline;
     for(auto kv : qv) {
@@ -88,6 +95,7 @@ Result search(string q) {
     });
     res.total = rank.size();
     if(rank.size() > 10) rank.resize(10);
+    // 摘要行取相邻命中最多的那一行；没有就用最早的正文行（跳过第 1 行的标题）
     for(Row& r : rank) {
         ull ln = 0, best = 0;
         for(auto kv : linehits[r.doc]) if(kv.second > best) best = kv.second, ln = kv.first;

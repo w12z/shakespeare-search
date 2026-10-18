@@ -2,10 +2,7 @@
 #include"porter_stem.h"
 using namespace std;
 typedef unsigned long long ull;
-struct Hit { 
-    string term; 
-    ull doc, line, pos; 
-};
+struct Hit { string term; ull doc, line, pos; };
 string readFile(string path) {
     if(!freopen(path.c_str(), "r", stdin)) return "";
     cin.clear();
@@ -25,6 +22,8 @@ string stem(string w) {
     int k = porter_stem(buf.data(), 0, (int)w.size() - 1);
     return string(buf.data(), k + 1);
 }
+// 读 tokens.tsv，把每个词的词干化结果按 (词干, 文档) 归并，统计 tf 和位置列表，
+// 写成 inverted.tsv。停用词不在这里去掉，位置后面判断相邻还要用
 int main() {
     string text = readFile("index/tokens.tsv"), line;
     vector<Hit> hits;
@@ -38,6 +37,7 @@ int main() {
         }
         line.clear();
     }
+    // 按 词干 -> 文档 -> 行 -> 列 排序，相同的就能挨在一起归并
     sort(hits.begin(), hits.end(), [](Hit a, Hit b) {
         if(a.term != b.term) return a.term < b.term;
         if(a.doc != b.doc) return a.doc < b.doc;
