@@ -37,7 +37,7 @@ int main() {
         }
         line.clear();
     }
-    // 按 词干 -> 文档 -> 行 -> 列 排序，相同的就能挨在一起归并
+    // 按 词干-文档-行-列排序，相同的就能挨在一起归并
     sort(hits.begin(), hits.end(), [](Hit a, Hit b) {
         if(a.term != b.term) return a.term < b.term;
         if(a.doc != b.doc) return a.doc < b.doc;

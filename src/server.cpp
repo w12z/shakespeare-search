@@ -45,7 +45,6 @@ void sendAll(int fd, string s) {
         off += n;
     }
 }
-// 手写的 HTTP 服务，单线程一次处理一个连接。
 //   /            搜索页
 //   /api/search  查询，返回 JSON
 //   其他路径      当静态文件发给 web/ 下的同名文件（这样点结果能看原网页）

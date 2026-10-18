@@ -53,9 +53,8 @@ ull countWords(string s) {
     }
     return n;
 }
-struct Page { string text; ull words, links; };
-// 一页 HTML 转成正文，顺带统计"正文里有多少词是包在链接里的"。
-// 后面拿这个比例判断目录页：目录页几乎全是链接文字
+struct Page { string text; ull words; };
+// 一页 HTML 转成正文
 Page parsePage(string html) {
     // 先正则删掉整块：注释、head/script/style、顶部那个 class="nav" 的导航表格
     html = regex_replace(html, regex("<!--[\\s\\S]*?-->"), " ");
@@ -63,12 +62,6 @@ Page parsePage(string html) {
         html = regex_replace(html, regex("<\\s*" + tag + "\\b[^>]*>[\\s\\S]*?<\\s*/\\s*" + tag + "\\s*>", regex::icase), " ");
     html = regex_replace(html, regex("<td\\b[^>]*class\\s*=\\s*[\\\"']?nav[\\\"']?[^>]*>[\\s\\S]*?<\\s*/\\s*table\\s*>", regex::icase), " ");
     Page p;
-    p.links = 0;
-    regex link("<a\\b[^>]*href\\s*=[^>]*>([\\s\\S]*?)</a\\s*>", regex::icase);
-    for(sregex_iterator it(html.begin(), html.end(), link), end; it != end; it++) {
-        string inside = regex_replace((*it)[1].str(), regex("<[^>]*>"), " ");
-        p.links += countWords(decode(inside));
-    }
     // 剩下的标签用扫描丢掉：见到 < 就跳到对应的 >。
     // 注意跳过的标签不补空格——源文件里有 match</A>'d 这种被标签劈开的词，
     // 补空格会变成 "match 'd"，什么都不补才拼得回 match'd
@@ -115,7 +108,7 @@ void walk(string dir, string rel, vector<string>& out) {
         else out.push_back(r);
     }
 }
-// 逐级建目录，相当于 mkdir -p
+// 逐级建目录
 void makeDirs(string path) {
     string cur;
     for(ull i = 0; i < path.size(); i++) {
@@ -130,8 +123,6 @@ int main() {
     walk(inDir, "", all);
     for(ull i = 0; i < all.size(); i++)
         if(all[i].substr(all[i].size() - 5) == ".html") files.push_back(all[i]);
-    // Comedy/History/Tragedy 是同一批文件的镜像，排序时让顶层目录排在前面，
-    // 后面按内容去重就会保留顶层那份
     auto mirror = [](const string& p) {
         return p.find("Comedy/") == 0 || p.find("History/") == 0 || p.find("Tragedy/") == 0;
     };
@@ -139,20 +130,19 @@ int main() {
         if(mirror(a) != mirror(b)) return mirror(b);
         return a < b;
     });
-    // 目录页、主页、全文页不要；正文太短的也不要
-    set<string> boiler = {"index.html", "full.html", "works.html", "news.html", "test.html"};
+    // 全文页不要（和分场文件内容重复）。目录页留着——搜到目录页也是有用的
+    set<string> skip = {"full.html", "news.html", "test.html"};
     set<ull> seen;
     for(ull i = 0; i < files.size(); i++) {
         string rel = files[i], name = rel.substr(rel.find_last_of('/') + 1);
-        if(boiler.count(lower(name))) continue;
+        if(skip.count(lower(name))) continue;
         // 内容相同的只留一份
         string raw = readFile(inDir + "/" + rel);
         ull h = hash<string>{}(raw);
         if(seen.count(h)) continue;
         seen.insert(h);
         Page p = parsePage(raw);
-        // 词太少，或者正文里过半的词都是链接 -> 当成目录页丢掉
-        if(p.words == 0 || p.words < 40 || p.links * 100 >= p.words * 55) continue;
+        if(p.words == 0) continue;
         string dst = outDir + "/" + rel;
         dst = dst.substr(0, dst.find_last_of('.')) + ".txt";
         makeDirs(dst), writeFile(dst, p.text);

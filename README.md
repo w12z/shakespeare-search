@@ -84,10 +84,12 @@ porter_stem.h
 
 导航栏不删的话，"Previous scene" "Next scene" "Shakespeare homepage" 这些会进词表。
 
-建索引时跳过 `index.html`、`full.html`、`works.html`、`news.html`、`test.html`，
-以及正文几乎全是链接的目录页。`Comedy/`、`History/`、`Tragedy/` 是同一批文件的镜像，
-按内容去重，保留顶层那份；有几个文件两个版本内容不同（比如 `lingers`/`fingers`），
-那属于不同版本，两个都留着。
+只跳过 `full.html`（全文页，和分场文件内容重复）、`news.html` 和 `test.html`。
+**目录页都留着** —— 各剧本的场次列表、`works.html`、站点首页都进了语料，
+因为检索时搜到目录页也是有用的。
+
+`Comedy/`、`History/`、`Tragedy/` 是同一批文件的镜像，按内容去重，保留顶层那份；
+有几个文件两个版本内容不同（比如 `lingers`/`fingers`），那属于不同版本，两个都留着。
 
 ## 分词规则
 
@@ -134,6 +136,10 @@ cos = (F(q), F(D)) / (‖F(q)‖ · ‖F(D)‖)
 
 ## 已知问题
 
+- **各剧本的场次列表被收录了两遍**。`hamlet/hamlet.html` 和 `hamlet/index.html` 是同一个列表，
+  只差一句亚马逊的买书广告（`You can buy the Arden text of this play from...`），
+  字节不同所以去重去不掉。37 个剧本都有这一对，搜 `hamlet` 时两页会一起出现。
+  要么去重改成比抽取后的正文，要么把那句广告当样板文字删掉。
 - **相邻判断用的是词干**，所以 `lovely death` 会命中 `love death`（`lovely` 的词干是 `love`）。
   搜 `love death` 排第一的是 `Death, death; O amiable lovely death!`，原文里并没有这个词组。
   要修得把位置索引改成按原词存。
